@@ -27,7 +27,6 @@ import { LoginButton, AccessToken } from 'react-native-fbsdk';
 
 const SignUp = ({ navigation }) => {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
-
   const dispatch = useDispatch();
 
   const handleSignUp = async (values) => {
@@ -42,44 +41,36 @@ const SignUp = ({ navigation }) => {
 
       console.log('Form Data:', formdata);
 
-      // Assuming _dosignup returns a promise
-      await dispatch(_dosignup(formdata));
+      // Dispatch signup action with navigation callback
+      await dispatch(_dosignup(formdata, navigation));
 
-      // After successful signup, set isEmailVerified to false
+      // Set isEmailVerified to false to show the loading screen
       setIsEmailVerified(false);
-
-      // Show loading screen or any UI indicating email verification
-      // You can navigate to a loading screen or show a modal, etc.
-      // For example:
-      navigation.navigate('LoadingScreen');
     } catch (error) {
-      // Handle signup error
       console.error('Signup Error:', error);
     }
   };
-
+    
   useEffect(() => {
     // Simulate email verification after 3 seconds
     const verificationTimer = setTimeout(() => {
       setIsEmailVerified(true);
-    }, 3000);
+    }, 1000);
 
     return () => clearTimeout(verificationTimer);
   }, []);
 
   // Redirect based on email verification status
-  useEffect(() => {
-    if (isEmailVerified) {
-      // Email is verified, navigate to the main content
-      navigation.navigate('MainContent');
-    }
-  }, [isEmailVerified, navigation]);
+  // useEffect(() => {
+  //   if (isEmailVerified) {
+  //     navigation.navigate('MainContent');
+  //   }
+  // }, [isEmailVerified, navigation]);
 
   // Render the loading screen while email is being verified
   if (!isEmailVerified) {
     return <LoadingScreen />;
   }
-
 
   const onFacebookLoginFinished = (error, result) => {
     if (error) {

@@ -78,7 +78,7 @@ const Login = ({ navigation }) => {
               {({ handleChange, handleSubmit, values, errors, touched }) => (
                 <>
                   <Input
-                    placeholder="Email"
+                    placeholder="User Name"
                     value={values.Email}
                     onChangeText={handleChange('Email')}
                     error={errors.Email && touched.Email && errors.Email}

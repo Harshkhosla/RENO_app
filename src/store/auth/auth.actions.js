@@ -34,7 +34,7 @@ export const _dologin = params => {
 };
 
 // _dosignup action
-export const _dosignup = params => {
+export const _dosignup = (params, navigation) => {
   return dispatch => {
     dispatch({type: authActions.AUTH_SIGNUP_REQUEST});
 
@@ -43,15 +43,14 @@ export const _dosignup = params => {
         console.log(result, 'hfhe');
 
         if (result.success) {
-          // Dispatch action for successful registration
-          // dispatch({
-          //   type: authActions.AUTH_SIGNUP_SUCCESS,
-          //   User_mid: result.mid,
-          //   token: null,
-          // });
+          dispatch({
+            type: authActions.AUTH_SIGNUP_SUCCESS,
+            User_mid: result.mid,
+            token: null,
+          });
 
           // Initiate the email verification process
-          dispatch(_doEmailVerification(result?.mid));
+          dispatch(_doEmailVerification(result?.mid, navigation));
         } else {
           Alert.alert(result.msg);
           dispatch({type: authActions.AUTH_SIGNUP_FAILURE});
@@ -64,28 +63,28 @@ export const _dosignup = params => {
   };
 };
 
+
 // _doEmailVerification action
-export const _doEmailVerification = mid => {
+export const _doEmailVerification = (mid, navigation) => {
   return dispatch => {
-    // Dispatch action to indicate the start of email verification
     dispatch({type: authActions.EMAIL_VERIFICATION_REQUEST});
 
-    // Construct the URL with the generated mid
     const verificationUrl = `https://apis.devcorps.in/verify_member_client?mid=${mid}`;
 
-    // Make the email verification API call
     fetch(verificationUrl)
       .then(response => response.json())
       .then(result => {
         if (result.success) {
-          // Dispatch action for successful email verification
-          console.log(result,"dsakhvhjsdbshbsh");
+          console.log(result, "dsakhvhjsdbshbsh");
           dispatch({type: authActions.EMAIL_VERIFICATION_SUCCESS});
           dispatch({
-              type: authActions.AUTH_SIGNUP_SUCCESS,
-              User_mid: result.mid,
-              token: null,
-            });
+            type: authActions.AUTH_SIGNUP_SUCCESS,
+            User_mid: result.mid,
+            token: null,
+          });
+
+          // Navigate to main content after successful email verification
+          // navigation.navigate('MainContent');
         } else {
           Alert.alert(result.msg);
           dispatch({type: authActions.EMAIL_VERIFICATION_FAILURE});
@@ -97,6 +96,7 @@ export const _doEmailVerification = mid => {
       });
   };
 };
+
 
 
 export const _doforgotPassword = (data, callbackObj) => {
