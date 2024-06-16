@@ -189,6 +189,7 @@ console.log(data,"dsjndvdsjkvnsd");
     // Show the "Order Placed" modal
     setOrderPlacedModalVisible(true);
   };
+  const pid=data.pid;
   const placeOrder = async () => {
     try {
       // Fetch details for each product in the cart
@@ -317,9 +318,11 @@ console.log(data,"dsjndvdsjkvnsd");
           </View>
         </TouchableHighlight>
           <TouchableHighlight 
-          onPress={placeOrder}
+          // onPress={placeOrder}
             style={styles.button}
             // onPress={() => {}}
+              onPress={() =>    navigation.navigate(RoutePaths.ChekoutHsm, { pid: pid })}
+              
             underlayColor={Colors.lightgreen2}>
             <Text style={{ color: Colors.White }}>Buy Now</Text>
           </TouchableHighlight>

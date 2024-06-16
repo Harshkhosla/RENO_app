@@ -6,44 +6,27 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Linking,
 } from 'react-native';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import ImagePicker from 'react-native-image-crop-picker';
 import CheckBox from '@react-native-community/checkbox';
 import Colors from '../../../constants/colors';
 import { useSelector } from 'react-redux';
 import { BASE_URL } from '../../../services/environment';
 import Modal from 'react-native-modal';
-import { colors } from 'react-native-elements';
+import { useNavigation } from '@react-navigation/native';
+import RoutePaths from '../../../Navigations/RoutePaths';
 
-
-const CheckoutHsm= ({ route }) => {
- 
-  const { pid } = route.params ;
+const CheckoutHsm = ({ route }) => {
+  const navigation = useNavigation();
+  const { pid } = route.params;
   const [projectDetails, setProjectDetails] = useState(null);
 
   const { user_Info } = useSelector(state => state.home);
   const [isEditingAddress, setEditingAddress] = useState(false);
-  const [siteAddress, setSiteAddress] = useState(
-    '123 Main Street, Cityville, Country'
-  );
+  const [siteAddress, setSiteAddress] = useState('123 Main Street, Cityville, Country');
   const [selectedPaymentMode, setSelectedPaymentMode] = useState('Net Banking');
   const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
-
-  const handleEditAddress = () => {
-    setEditingAddress(true);
-  };
-
-  const handleSaveAddress = () => {
-    // Save the updated address
-    setEditingAddress(false);
-    // You can also make an API call to save the updated address here
-  };
-
-  const toggleBottomSheet = () => {
-    setIsBottomSheetVisible(!isBottomSheetVisible);
-  };
-
+  const [isOrderPlacedModalVisible, setOrderPlacedModalVisible] = useState(false);
 
   useEffect(() => {
     if (pid) {
@@ -53,70 +36,135 @@ const CheckoutHsm= ({ route }) => {
           'api-Key': '90bd6f5b-033f-42e7-8e92-2a443dfa42f8',
         },
       })
-        .then((response) => response.json())
-        .then((data) => {
-          // Update the state with project details
+        .then(response => response.json())
+        .then(data => {
           console.log('Project Details:', data.product);
           setProjectDetails(data.product);
         })
-        .catch((error) => {
+        .catch(error => {
           console.error('Error fetching project details:', error);
         });
     }
   }, [pid]);
- 
 
+  const handleEditAddress = () => {
+    setEditingAddress(true);
+  };
 
+  const handleSaveAddress = () => {
+    setEditingAddress(false);
+  };
 
+  const toggleBottomSheet = () => {
+    setIsBottomSheetVisible(!isBottomSheetVisible);
+  };
+
+  const togglePaymentMode = (mode) => {
+    setSelectedPaymentMode(mode);
+  };
+
+  const handleOrderPlaced = () => {
+    setOrderPlacedModalVisible(true);
+  };
+
+  const handleOrderPlacedModalClose = () => {
+    setOrderPlacedModalVisible(false);
+    navigation.navigate(RoutePaths.OrdersScreen);
+  };
+
+  const placeOrder = async () => {
+    try {
+      const currentDate = new Date();
+      const formattedDate = `${currentDate.getDate()}-${currentDate.getMonth() + 1}-${currentDate.getFullYear()}`;
+      const formattedTime = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
+
+      const orderData = {
+        amount: projectDetails.unit_price,
+        currency: "SGD",
+        email: user_Info?.email,
+        phone: user_Info?.phn,
+        name: user_Info?.uname,
+        payment_methods: ["paynow_online"],
+        purpose: projectDetails.product_name,
+        expires_after: "5 mins",
+        redirect_url: "http://139.59.236.50:3002/account",
+        Odata: {
+          mid: user_Info?.mid,
+          amount: projectDetails.unit_price,
+          payment_mode: "Online",
+          tracking_id: `TRACK${projectDetails.unit_price}`,
+          delivery_status: "Pending",
+          payment_status: "pending",
+          email: user_Info?.email,
+          shipping_addr: siteAddress,
+          contact: user_Info?.phn,
+          uname: user_Info?.uname,
+          shipping: "25",
+          subtotal: "97.00",
+          tax: "8",
+          products: [{
+            pid: projectDetails.pid,
+            product_name: projectDetails.product_name,
+            price: projectDetails.selling_price,
+            photo: projectDetails.thumbnail_image,
+            count: 1,
+            reward_points: projectDetails.reward_points,
+          }],
+        },
+        points: {
+          mid: user_Info?.mid,
+          camt: user_Info?.cashback_points,
+          ramt: user_Info?.reward_points,
+          cdeducted: 0,
+          rdeducted: 0
+        },
+      };
+
+      console.log('Order Data:', JSON.stringify(orderData, null, 2));
+
+      const response = await fetch('https://apis.devcorps.in/payment-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const result = await response.json();
+      console.log('API Response:', result);
+
+      if (result && result.url) {
+        await Linking.openURL(result.url);
+        console.log('Payment API Response:', result);
+        handleOrderPlaced();
+      } else {
+        throw new Error('Invalid URL in the response');
+      }
+    } catch (error) {
+      console.error('Error placing order:', error.message);
+    }
+  };
 
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={{ padding: 20 }}>
-        <Text
-          style={{
-            fontSize: 18,
-            fontWeight: '600',
-            marginBottom: 20,
-            color: Colors.Black,
-          }}
-        >
+        <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 20, color: Colors.Black }}>
           Project Summary
         </Text>
         {projectDetails && (
           <View style={styles.productSummaryContainer}>
-            <Image
-              source={{ uri: projectDetails.thumbnail_image }}
-              style={styles.productImage}
-            />
+            <Image source={{ uri: projectDetails.thumbnail_image }} style={styles.productImage} />
             <View style={styles.productInfo}>
-              <Text style={styles.productName}>
-                {projectDetails.product_name}
-              </Text>
-              <Text style={styles.productPrice}>
-                {`$${projectDetails.unit_price}`}
-              </Text>
+              <Text style={styles.productName}>{projectDetails.product_name}</Text>
+              <Text style={styles.productPrice}>{`$${projectDetails.unit_price}`}</Text>
             </View>
           </View>
         )}
 
-        <Text
-          style={{
-            fontSize: 14,
-            fontWeight: '500',
-            marginBottom: 20,
-            color: Colors.Gray,
-          }}
-        >
+        <Text style={{ fontSize: 14, fontWeight: '500', marginBottom: 20, color: Colors.Gray }}>
           Billing Details
         </Text>
-        <Text
-          style={{
-            fontSize: 14,
-            fontWeight: '400',
-            marginBottom: 20,
-            color: Colors.Gray,
-          }}
-        >
+        <Text style={{ fontSize: 14, fontWeight: '400', marginBottom: 20, color: Colors.Gray }}>
           Deliver to
         </Text>
 
@@ -163,50 +211,26 @@ const CheckoutHsm= ({ route }) => {
               value={siteAddress}
               onChangeText={setSiteAddress}
             />
-                      <View style={styles.row}>
-
-            <TouchableOpacity onPress={handleSaveAddress}>
-              <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={toggleBottomSheet}>
-              <Text style={styles.saveButtonText}>Cancel</Text>
-            </TouchableOpacity>
+            <View style={styles.row}>
+              <TouchableOpacity onPress={handleSaveAddress}>
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={toggleBottomSheet}>
+                <Text style={styles.saveButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          </View>
-
         </Modal>
 
         <View style={styles.gap} />
 
-        <Text
-          style={{
-            fontSize: 15,
-            fontWeight: '500',
-            marginBottom: 20,
-            color: Colors.Gray,
-          }}
-        >
+        <Text style={{ fontSize: 15, fontWeight: '500', marginBottom: 20, color: Colors.Gray }}>
           Get it by
         </Text>
-        <Text
-          style={{
-            fontSize: 13,
-            fontWeight: '500',
-            marginBottom: 20,
-            marginTop: -5,
-            color: Colors.Gray,
-          }}
-        >
+        <Text style={{ fontSize: 13, fontWeight: '500', marginBottom: 20, marginTop: -5, color: Colors.Gray }}>
           04 Nov 2023, 4:30 pm
         </Text>
-        <Text
-          style={{
-            fontSize: 14,
-            fontWeight: '500',
-            marginBottom: 20,
-            color: Colors.Gray,
-          }}
-        >
+        <Text style={{ fontSize: 14, fontWeight: '500', marginBottom: 20, color: Colors.Gray }}>
           Payment mode
         </Text>
 
@@ -235,13 +259,21 @@ const CheckoutHsm= ({ route }) => {
           </TouchableOpacity>
         </View>
 
-
-        <TouchableOpacity
-          style={styles.ContinueButton}
-          onPress={null}
-        >
-          <Text style={styles.submitButtonText}>Continue </Text>
+        <TouchableOpacity style={styles.ContinueButton} onPress={placeOrder}>
+          <Text style={styles.submitButtonText}>Continue</Text>
         </TouchableOpacity>
+        <Modal
+          isVisible={isOrderPlacedModalVisible}
+          onBackdropPress={handleOrderPlacedModalClose}
+          style={styles.modal}
+        >
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalText}>Order Placed</Text>
+            <TouchableOpacity onPress={handleOrderPlacedModalClose} style={styles.okButton}>
+              <Text style={styles.okButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
       </View>
     </ScrollView>
   );
@@ -262,14 +294,10 @@ const styles = {
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
-    alignItems: 'center', 
+    alignItems: 'center',
   },
   submitButtonText: {
     color: Colors.White,
-    fontSize: 15,
-  },
-  saveButtonText: {
-    color: '#488C20',
     fontSize: 15,
   },
   ContinueButton: {
@@ -277,7 +305,7 @@ const styles = {
     padding: 10,
     borderRadius: 23,
     marginTop: 10,
-    alignItems: 'center', 
+    alignItems: 'center',
   },
   dateAndTimeContainer: {
     padding: 10,
@@ -304,13 +332,11 @@ const styles = {
     alignItems: 'center',
   },
   selectedAddressIndicator: {
-   
     width: 12,
     height: 12,
     borderRadius: 6,
     backgroundColor: Colors.White,
   },
-
   productSummaryContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -340,7 +366,7 @@ const styles = {
   editAddressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding:8
+    padding: 8,
   },
   editAddressInput: {
     flex: 1,
@@ -350,18 +376,15 @@ const styles = {
     marginRight: 10,
     padding: 5,
     borderColor: Colors.Green,
-    color:Colors.Black
+    color: Colors.Black,
   },
   saveButtonText: {
-    color: Colors.lightgreen2,
+    color: Colors.Green,
     fontSize: 14,
     fontWeight: '600',
   },
- 
- 
- 
-  gap:{
-    height:20
+  gap: {
+    height: 20,
   },
   editAddressButton: {
     backgroundColor: Colors.lightgreen2,
@@ -374,7 +397,6 @@ const styles = {
     color: Colors.White,
     fontSize: 15,
   },
-
   bottomSheet: {
     justifyContent: 'flex-end',
     margin: 0,
@@ -385,28 +407,13 @@ const styles = {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
-  row:{flexDirection:'row',padding:32},
+  row: { flexDirection: 'row', padding: 32 },
   bottomSheetTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 20,
     color: Colors.Black,
   },
-  editAddressInput: {
-    height: 40,
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 10,
-    padding: 5,
-    borderColor: Colors.Green,
-    color: Colors.Black,
-  },
-  saveButtonText: {
-    color: Colors.lightgreen2,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-
   paymentModeContainer: {
     flexDirection: 'column',
     marginBottom: 20,
@@ -419,31 +426,34 @@ const styles = {
     flexDirection: 'row',
   },
   selectedPaymentMode: {
-    backgroundColor: '#488C20', // Change the color as needed
+    backgroundColor: '#488C20',
   },
   paymentModeText: {
     color: Colors.Black,
     fontSize: 14,
     marginLeft: 10,
   },
-  checkbox: {
-    color: '#488C20', // Set the checkbox color to green
+  modalContainer: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 8,
+    alignItems: 'center',
   },
-  checkedCheckbox: {
-    color: '#488C20', // Set the checked checkbox color to darker green
+  modalText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    color: Colors.Black,
   },
-  
-  saveButtonText: {
-    color: '#488C20',
-    fontSize: 15,
-    fontWeight: '600',
-    marginRight:100
+  okButton: {
+    backgroundColor: '#3c9429',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    alignItems: 'center',
   },
-  cancelButtonText: {
-    color: '#488C20',
-    fontSize: 15,
-    fontWeight: '600',
-    marginTop: 10,
+  okButtonText: {
+    color: Colors.White,
   },
 };
 
