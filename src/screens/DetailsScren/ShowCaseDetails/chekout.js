@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Linking,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import ImagePicker from 'react-native-image-crop-picker';
@@ -15,7 +16,11 @@ import { useSelector } from 'react-redux';
 import { BASE_URL } from '../../../services/environment';
 import Modal from 'react-native-modal';
 
+import RoutePaths from '../../../Navigations/RoutePaths';
+import { useNavigation } from '@react-navigation/native';
+
 const Checkout = ({ route }) => {
+  const navigation = useNavigation();
   const [contactNo, setContactNo] = useState('');
   const [selectedDate, setSelectedDate] = useState(null);
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
@@ -24,9 +29,10 @@ const Checkout = ({ route }) => {
   const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState([]);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const { pid } = route.params || {};
+  const { pid,totalAmount } = route.params || {};
   const [projectDetails, setProjectDetails] = useState(null);
 
+  const [isOrderPlacedModalVisible, setOrderPlacedModalVisible] = useState(false);
   const { user_Info } = useSelector((state) => state.home);
 
   const [isEditingAddress, setEditingAddress] = useState(false);
@@ -49,7 +55,124 @@ const Checkout = ({ route }) => {
   const toggleBottomSheet = () => {
     setIsBottomSheetVisible(!isBottomSheetVisible);
   };
+console.log(projectDetails?.project_rate,"harsh");
+   
+  const fetchProductDetails = async (pid) => {
+    try {
+      const apiKey = '90bd6f5b-033f-42e7-8e92-2a443dfa42f8';
 
+      const response = await fetch(`${BASE_URL}getProduct_hsm?pid=${pid}`, {
+        headers: { 'api-key': apiKey },
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        return data.product;
+      } else {
+        console.error('Failed to fetch product details:', data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching product details:', error.message);
+    }
+  };
+
+  const handleOrderPlaced = () => {
+    // Show the "Order Placed" modal
+    setOrderPlacedModalVisible(true);
+  };
+  const handleOrderPlacedModalClose = () => {
+    // Close the "Order Placed" modal
+    setOrderPlacedModalVisible(false);
+
+    navigation.navigate(RoutePaths.OrdersScreen);
+
+    // Optionally, navigate to the success screen or perform any other actions
+  };
+  const placeOrder = async () => {
+    try {
+      // Fetch details for each product in the cart
+      const productDetails = [{
+        pid: projectDetails.pid,
+        product_name: projectDetails.project_name,
+        price: projectDetails.project_rate,
+        photo: projectDetails.thumbnail_photo,
+        count: 1, // Assuming the count is 1 as there is no count in the project details
+        reward_points: 0, // Assuming reward points as 0 as it's not provided in project details
+      }];
+  
+      const currentDate = new Date();
+      const formattedDate = `${currentDate.getDate()}-${currentDate.getMonth() + 1}-${currentDate.getFullYear()}`;
+      const formattedTime = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
+  
+      // Construct the order data
+      const orderData = {
+        amount: projectDetails?.project_rate,
+        currency: "SGD",
+        email: user_Info?.email,
+        phone: user_Info?.phn,
+        name: user_Info?.uname,
+        payment_methods: ["paynow_online"],
+        purpose: projectDetails.project_name,
+        expires_after: "5 mins",
+        redirect_url: "http://139.59.236.50:3002/account",
+        Odata: {
+          mid: user_Info?.mid,
+          amount: projectDetails?.project_rate,
+          payment_mode: "Online",
+          tracking_id: `TRACK${projectDetails?.project_rate}`,
+          delivery_status: "Pending",
+          payment_status: "pending",
+          email: user_Info?.email,
+          shipping_addr: "US, Washington DC, London 445423 USA", 
+          contact: user_Info?.phn,
+          uname: user_Info?.uname,
+       
+        
+          // coupon: "0 ",
+          shipping: "25",
+          subtotal: projectDetails?.project_rate, 
+          tax: "8", 
+          products: productDetails,
+          // date: formattedDate,
+          // time: formattedTime,
+        },
+        points: {
+          mid: user_Info?.mid,
+          camt: user_Info?.cashback_points,
+          ramt: user_Info?.reward_points,
+          cdeducted:projectDetails?.project_rate,
+          rdeducted:projectDetails?.project_rate
+        },
+      };
+  
+      console.log('Order Data:', JSON.stringify(orderData, null, 2)); // Log the order data
+  
+      const apiKey = '90bd6f5b-033f-42e7-8e92-2a443dfa42f8';
+      const response = await fetch('https://apis.devcorps.in/payment-request', {
+        method: 'POST',
+        headers: {
+          // 'api-key': apiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+  
+      const result = await response.json();
+      
+      console.log('API Response:', result); // Debugging log to check the API response
+  
+      if (result && result.url) {
+        await Linking.openURL(result.url);
+        console.log('Payment API Response:', result);
+        handleOrderPlaced();
+      } else {
+        throw new Error('Invalid URL in the response');
+      }
+    } catch (error) {
+      console.error('Error placing order:', error.message);
+      // Handle error appropriately (e.g., show an error message)
+    }
+  };
 
   useEffect(() => {
     if (pid) {
@@ -243,10 +366,23 @@ const Checkout = ({ route }) => {
 
         <TouchableOpacity
           style={styles.ContinueButton}
-          onPress={null}
+          // onPress={null}
+          onPress={placeOrder}
         >
           <Text style={styles.submitButtonText}>Continue </Text>
         </TouchableOpacity>
+        <Modal
+        isVisible={isOrderPlacedModalVisible}
+        onBackdropPress={handleOrderPlacedModalClose}
+        style={styles.modal}
+      >
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalText}>Order Placed</Text>
+          <TouchableOpacity onPress={handleOrderPlacedModalClose} style={styles.okButton}>
+            <Text style={styles.okButtonText}>OK</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
       </View>
     </ScrollView>
   );
@@ -261,6 +397,16 @@ const styles = {
     borderColor: Colors.Green,
     borderRadius: 5,
     backgroundColor: Colors.White,
+  }, 
+  okButton: {
+    backgroundColor: '#3c9429',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    alignItems: 'center',
+  },
+  okButtonText: {
+    color: Colors.White,
   },
   submitButton: {
     backgroundColor: '#488C20',
@@ -320,6 +466,18 @@ const styles = {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+  },
+  modalContainer: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    color: Colors.Black,
   },
   productImage: {
     width: 100,

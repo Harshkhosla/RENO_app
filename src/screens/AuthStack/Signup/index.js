@@ -1,4 +1,4 @@
-import React, {useEffect,useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,25 +8,22 @@ import {
   Text,
   ScrollView,
   ImageBackground,
-  Alert,
 } from 'react-native';
 import Images from '../../../constants/Images';
-import {vh, vw} from '../../../util/dimenstions';
+import { vh, vw } from '../../../util/dimenstions';
 import Colors from '../../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {SIGN_UP} from '../../../services/ApiUrls';
-import {Request_params} from '../../../services/postApi';
-import {useDispatch} from 'react-redux';
-import {authActions} from '../../../store/actionTypes';
-import {Formik} from 'formik';
-import {signUpValidationSchema} from '../../../helper/Schema';
+import { useDispatch } from 'react-redux';
+import { Formik } from 'formik';
+import { signUpValidationSchema } from '../../../helper/Schema';
 import Input from '../../../components/Input';
-import {_dosignup} from '../../../store/auth/auth.actions';
+import { _dosignup } from '../../../store/auth/auth.actions';
 import LoadingScreen from './LoadingScreen';
 import { LoginButton, AccessToken } from 'react-native-fbsdk';
 
 const SignUp = ({ navigation }) => {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const dispatch = useDispatch();
 
   const handleSignUp = async (values) => {
@@ -41,18 +38,15 @@ const SignUp = ({ navigation }) => {
 
       console.log('Form Data:', formdata);
 
-      // Dispatch signup action with navigation callback
       await dispatch(_dosignup(formdata, navigation));
 
-      // Set isEmailVerified to false to show the loading screen
       setIsEmailVerified(false);
     } catch (error) {
       console.error('Signup Error:', error);
     }
   };
-    
+
   useEffect(() => {
-    // Simulate email verification after 3 seconds
     const verificationTimer = setTimeout(() => {
       setIsEmailVerified(true);
     }, 1000);
@@ -60,14 +54,6 @@ const SignUp = ({ navigation }) => {
     return () => clearTimeout(verificationTimer);
   }, []);
 
-  // Redirect based on email verification status
-  // useEffect(() => {
-  //   if (isEmailVerified) {
-  //     navigation.navigate('MainContent');
-  //   }
-  // }, [isEmailVerified, navigation]);
-
-  // Render the loading screen while email is being verified
   if (!isEmailVerified) {
     return <LoadingScreen />;
   }
@@ -83,10 +69,10 @@ const SignUp = ({ navigation }) => {
           'Facebook login successful with token: ',
           data.accessToken.toString()
         );
-        // Perform actions with the Facebook token
       });
     }
   };
+
   return (
     <View style={styles.container}>
       <ImageBackground source={Images.backgroundImage} style={styles.image}>
@@ -107,10 +93,8 @@ const SignUp = ({ navigation }) => {
                 Password: '',
               }}
               validationSchema={signUpValidationSchema}
-              onSubmit={(values) => {
-                // doRegister(values);
-                handleSignUp(values);
-              }}>
+              onSubmit={(values) => handleSignUp(values)}
+            >
               {({ handleChange, handleSubmit, values, errors, touched }) => (
                 <>
                   <Input
@@ -125,19 +109,33 @@ const SignUp = ({ navigation }) => {
                     onChangeText={handleChange('Email')}
                     error={errors.Email && touched.Email && errors.Email}
                   />
-                  <Input
-                    placeholder="Password"
-                    value={values.Password}
-                    onChangeText={handleChange('Password')}
-                    error={errors.Password && touched.Password && errors.Password}
-                  />
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      placeholder="Password"
+                      placeholderTextColor="#888"
+                      secureTextEntry={!passwordVisible}
+                      value={values.Password}
+                      onChangeText={handleChange('Password')}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setPasswordVisible(!passwordVisible)}
+                    >
+                      <Icon
+                        name={passwordVisible ? 'eye-off' : 'eye'}
+                        size={20}
+                        color="grey"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  {errors.Password && touched.Password && (
+                    <Text style={styles.errorText}>{errors.Password}</Text>
+                  )}
                   <Input
                     placeholder="Mobile Number"
                     value={values.PhoneNumber}
                     onChangeText={handleChange('PhoneNumber')}
-                    error={
-                      errors.PhoneNumber && touched.PhoneNumber && errors.PhoneNumber
-                    }
+                    error={errors.PhoneNumber && touched.PhoneNumber && errors.PhoneNumber}
                   />
 
                   <TouchableOpacity
@@ -147,7 +145,8 @@ const SignUp = ({ navigation }) => {
                         url: url.PRIVACY_POLICY,
                       })
                     }
-                    style={{ alignSelf: 'flex-start', marginVertical: 11 }}>
+                    style={{ alignSelf: 'flex-start', marginVertical: 11 }}
+                  >
                     <Text style={{ fontSize: 12 }}>
                       By signing up, you agree to our{' '}
                       {
@@ -166,7 +165,8 @@ const SignUp = ({ navigation }) => {
 
                   <TouchableOpacity
                     style={[styles.loginButton, { backgroundColor: '#385752' }]}
-                    onPress={handleSubmit}>
+                    onPress={handleSubmit}
+                  >
                     <Text style={styles.buttonText}>Sign Up</Text>
                   </TouchableOpacity>
                 </>
@@ -178,13 +178,12 @@ const SignUp = ({ navigation }) => {
 
               <Text style={styles.font12gray}>OR</Text>
 
-              <View
-                style={{ flex: 0.6, height: 1, backgroundColor: '#dfdfdf' }}
-              />
+              <View style={{ flex: 0.6, height: 1, backgroundColor: '#dfdfdf' }} />
             </View>
             <TouchableOpacity
               style={[styles.loginButtonFacebook, { backgroundColor: '#3A589B' }]}
-              onPress={onFacebookLoginFinished}>
+              onPress={onFacebookLoginFinished}
+            >
               <Text style={styles.buttonText}>Login with Facebook</Text>
             </TouchableOpacity>
             <View style={styles.alreadyAccount}>
@@ -237,6 +236,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 10,
   },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e2e2',
+    borderRadius: 5,
+    marginTop: 10,
+    paddingRight: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 10,
+  },
   loginButton: {
     backgroundColor: 'transparent',
     borderRadius: 5,
@@ -264,7 +276,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   checkboxChecked: {
-    backgroundColor: '#8FC743', // Add your desired color for checked state
+    backgroundColor: '#8FC743',
     borderWidth: 0,
   },
   label: {
@@ -300,9 +312,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   alreadyAccount: {
-    flexDirection: 'row', // Align children in a row
-    justifyContent: 'center', // Center the content horizontally
-    alignItems: 'center', // Center the content vertically
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 10,
   },
   signinText: {
@@ -338,6 +350,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 20,
     left: 20,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 5,
   },
 });
 

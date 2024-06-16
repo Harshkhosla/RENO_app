@@ -29,7 +29,7 @@ const OrdersScreen = () => {
           },
         });
         const result = await response.json();
-// console.log("kdkdkdkdkdkdkdkk",result);
+console.log("kdkdkdkdkdkdkdkk",result);
 if (result.success && result.orders) {
   const initialProductStates = {};
   result?.orders?.forEach((order) => {

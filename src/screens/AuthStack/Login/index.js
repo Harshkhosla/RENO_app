@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,30 +8,29 @@ import {
   Text,
   ScrollView,
   ImageBackground,
-  Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Images from '../../../constants/Images';
-import RoutePaths from '../../../Navigations/RoutePaths';
-import { normalize } from '../../../util/dimenstions';
 import { useDispatch } from 'react-redux';
 import { _dologin } from '../../../store/auth/auth.actions';
 import { Formik } from 'formik';
 import { loginValidationSchema } from '../../../helper/Schema';
 import Input from '../../../components/Input';
 import { LoginButton, AccessToken } from 'react-native-fbsdk';
+import Images from '../../../constants/Images';
+import RoutePaths from '../../../Navigations/RoutePaths';
+import { normalize } from '../../../util/dimenstions';
 
 const Login = ({ navigation }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState('');
-  const [password, setpassword] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const dispatch = useDispatch();
 
   const handleLogin = (values) => {
     let formdata = new FormData();
     formdata.append('uname', values.Email);
     formdata.append('pwd', values.Password);
-
     dispatch(_dologin(formdata));
   };
 
@@ -50,31 +49,22 @@ const Login = ({ navigation }) => {
           'Facebook login successful with token: ',
           data.accessToken.toString()
         );
-        // Perform actions with the Facebook token
       });
     }
   };
 
   return (
     <View style={styles.container}>
-      <ImageBackground
-        source={Images.backgroundImage}
-        style={styles.image}>
+      <ImageBackground source={Images.backgroundImage} style={styles.image}>
         <ScrollView>
           <Image source={Images.logo} style={styles.logo} />
-
           <View style={styles.form}>
             <Text style={styles.text}>LOGIN</Text>
-
             <Formik
-              initialValues={{
-                Email: email,
-                Password: password,
-              }}
+              initialValues={{ Email: email, Password: password }}
               validationSchema={loginValidationSchema}
-              onSubmit={(values) => {
-                handleLogin(values);
-              }}>
+              onSubmit={(values) => handleLogin(values)}
+            >
               {({ handleChange, handleSubmit, values, errors, touched }) => (
                 <>
                   <Input
@@ -83,62 +73,64 @@ const Login = ({ navigation }) => {
                     onChangeText={handleChange('Email')}
                     error={errors.Email && touched.Email && errors.Email}
                   />
-
-                  <Input
-                    placeholder="Password"
-                    value={values.Password}
-                    onChangeText={handleChange('Password')}
-                    error={
-                      errors.Password &&
-                      touched.Password &&
-                      errors.Password
-                    }
-                  />
-
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      placeholder="Password"
+                        placeholderTextColor="#888"
+                      secureTextEntry={!passwordVisible}
+                      value={values.Password}
+                      onChangeText={handleChange('Password')}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setPasswordVisible(!passwordVisible)}
+                    >
+                      <Ionicons
+                        name={passwordVisible ? 'eye-off' : 'eye'}
+                        size={20}
+                        color="grey"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  {errors.Password && touched.Password && (
+                    <Text style={styles.errorText}>{errors.Password}</Text>
+                  )}
                   <TouchableOpacity
                     style={[styles.loginButton, { backgroundColor: '#385752' }]}
-                    onPress={handleSubmit}>
+                    onPress={handleSubmit}
+                  >
                     <Text style={styles.buttonText}>Login</Text>
                   </TouchableOpacity>
                 </>
               )}
             </Formik>
-
             <View style={styles.checkAndForgotContainer}>
-            <TouchableOpacity
-  style={styles.checkboxContainer}
-  onPress={() => setRememberMe(!rememberMe)}>
-  <View
-    style={[
-      styles.checkbox,
-      rememberMe ? styles.checkboxChecked : null,
-    ]}>
-    {rememberMe && (
-      <Ionicons name="checkmark-outline" size={16} color="#fff" />
-    )}
-  </View>
-  <Text style={styles.label}>Remember Me</Text>
-</TouchableOpacity>
-
               <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate(RoutePaths.forgotpassword)
-                }>
+                style={styles.checkboxContainer}
+                onPress={() => setRememberMe(!rememberMe)}
+              >
+                <View
+                  style={[
+                    styles.checkbox,
+                    rememberMe ? styles.checkboxChecked : null,
+                  ]}
+                >
+                  {rememberMe && (
+                    <Ionicons name="checkmark-outline" size={16} color="#fff" />
+                  )}
+                </View>
+                <Text style={styles.label}>Remember Me</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate(RoutePaths.forgotpassword)}
+              >
                 <Text style={styles.forgotPwd}>Forgot Password?</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.orContainer}>
               <View style={styles.line} />
-
               <Text style={styles.font12gray}>OR</Text>
-
-              <View
-                style={{
-                  flex: 0.6,
-                  height: 1,
-                  backgroundColor: '#dfdfdf',
-                }}
-              />
+              <View style={{ flex: 0.6, height: 1, backgroundColor: '#dfdfdf' }} />
             </View>
             <LoginButton
               style={[styles.loginButtonFacebook, { backgroundColor: '#3A589B' }]}
@@ -147,7 +139,8 @@ const Login = ({ navigation }) => {
             <View style={styles.alreadAccount}>
               <Text style={styles.signinText}>Don't have an account?</Text>
               <TouchableOpacity
-                onPress={() => navigation.navigate(RoutePaths.signUp)}>
+                onPress={() => navigation.navigate(RoutePaths.signUp)}
+              >
                 <Text style={styles.clickableText}> Sign up</Text>
               </TouchableOpacity>
             </View>
@@ -169,8 +162,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
     marginTop: 68,
     alignSelf: 'center',
-    height:154,
-    width:294,
+    height: 154,
+    width: 330,
   },
   form: {
     backgroundColor: '#fff',
@@ -183,9 +176,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: normalize(18),
     fontWeight: '800',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   input: {
     borderWidth: 1,
@@ -193,6 +183,21 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e2e2',
+    borderRadius: 5,
+    marginTop: 10,
+    paddingRight: 10,
+    // color:"#000000"
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 10,
+     color: '#2b2b2b'
   },
   loginButton: {
     backgroundColor: 'transparent',
@@ -221,13 +226,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   checkboxChecked: {
-    backgroundColor: '#8FC743', 
+    backgroundColor: '#8FC743',
     borderWidth: 0,
-    
   },
   label: {
     color: 'black',
-
     fontSize: 16,
   },
   forgotPwd: {
@@ -251,7 +254,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
   },
-  line: {flex: 0.6, height: 1, backgroundColor: '#dfdfdf'},
+  line: { flex: 0.6, height: 1, backgroundColor: '#dfdfdf' },
   orText: {
     textAlign: 'center',
     marginTop: 5,
@@ -260,9 +263,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   alreadAccount: {
-    flexDirection: 'row', // Align children in a row
-    justifyContent: 'center', // Center the content horizontally
-    alignItems: 'center', // Center the content vertically
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 10,
   },
   signinText: {
@@ -287,6 +290,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#aaa',
     margin: 10,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 5,
   },
 });
 

@@ -9,7 +9,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import Modal from 'react-native-modal';
 import { useSelector } from 'react-redux';
-
+import { Linking } from 'react-native';
 import { BASE_URL } from '../../../services/environment';
 import CommonHomeList from '../../../components/CommonHomeList';
 import MarketPlaceCard from '../../../components/MarketPlaceCard';
@@ -126,7 +126,7 @@ const ProductServiceDetails = ({ navigation,route }) => {
 
     checkLikedStatus();
   }, [data?.pid]);
-
+console.log(data,"dsjndvdsjkvnsd");
   const handleLikeClick = async () => {
     // Toggle the liked state
     setIsLiked(!isLiked);
@@ -192,19 +192,16 @@ const ProductServiceDetails = ({ navigation,route }) => {
   const placeOrder = async () => {
     try {
       // Fetch details for each product in the cart
-    //   const productsData = await Promise.all(
-    //     data.map(async (product) => {
-    //         const productDetails = await fetchProductDetails(product.pid);
-    //         return {
-    //             pid: productDetails.pid,
-    //             product_name: productDetails.product_name,
-    //             price: productDetails.selling_price,
-    //             photo: productDetails.thumbnail_image,
-    //             count: product.count,
-    //             reward_points: productDetails.reward_points,
-    //         };
-    //     })
-    // );
+      const productsData = [
+        {
+          pid: data.pid,
+          product_name: data.product_name,
+          price: data.selling_price,
+          photo: data.thumbnail_image,
+          count: 1, // Assuming the count is 1 as there is no count in the product details
+          reward_points: data.reward_points,
+        }
+      ];
     
       const currentDate = new Date();
       const formattedDate = `${currentDate.getDate()}-${currentDate.getMonth() + 1}-${currentDate.getFullYear()}`;
@@ -234,7 +231,7 @@ const ProductServiceDetails = ({ navigation,route }) => {
           shipping: "25",
           subtotal: "97.00", 
           tax: "8", 
-          // products: productsData,
+          products: productsData,
           date: formattedDate,
           time: formattedTime,
         },
@@ -258,9 +255,16 @@ const ProductServiceDetails = ({ navigation,route }) => {
 
   // Handle the API response result here
   console.log('Payment API Response:', result);
-
-  handleOrderPlaced();
-} catch (error) {
+  if (result && result.url) {
+    await Linking.openURL(result.url);
+    console.log('Payment API Response:', result);
+    handleOrderPlaced();
+  } else {
+    throw new Error('Invalid URL in the response');
+  }
+} 
+  // handleOrderPlaced();
+ catch (error) {
   console.error('Error placing order:', error.message);
   // Handle error appropriately (e.g., show an error message)
 }

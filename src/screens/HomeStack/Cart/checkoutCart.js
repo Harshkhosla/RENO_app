@@ -139,83 +139,97 @@ const CheckoutCart= ({ route }) => {
     }
   };
 
-  
-  
-      const placeOrder = async () => {
-        try {
-          // Fetch details for each product in the cart
-          const productsData = await Promise.all(
-            cartProducts.map(async (product) => {
-              const productDetails = await fetchProductDetails(product.pid);
-              return {
-                pid: productDetails.pid,
-                product_name: productDetails.product_name,
-                price: productDetails.selling_price,
-                photo: productDetails.thumbnail_image,
-                count: product.count,
-                reward_points: productDetails.reward_points,
-              };
-            })
-          );
-          const currentDate = new Date();
-          const formattedDate = `${currentDate.getDate()}-${currentDate.getMonth() + 1}-${currentDate.getFullYear()}`;
-          const formattedTime = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
-          // Construct the order data
-          const orderData = {
-            amount: totalAmount,
-            currency: "SGD",
-            email: user_Info?.email,
-            phone: user_Info?.phn,
-            name: user_Info?.uname,
-            payment_methods: ["paynow_online", "card", "wechat","alipay"],
-            purpose: cartProducts.map((product) => product.product_name).join(', '),
-            expires_after: "5 mins",
-            Odata: {
-              mid: user_Info?.mid,
-              amount: totalAmount,
-              payment_mode: "Online",
-              tracking_id: `TRACK${totalAmount}`,
-              delivery_status: "Pending",
-              payment_status: "pending",
-              email: user_Info?.email,
-              shipping_addr: "US, Washington DC, London 445423 USA", 
-              contact: user_Info?.phn,
-              uname: user_Info?.uname,
-              coupon: "0 ",
-              shipping: "25",
-              subtotal: "97.00", 
-              tax: "8", 
-              products: productsData,
-              date: formattedDate,
-              time: formattedTime,
-            },
-            points: {
-              mid: user_Info?.mid,
-              camt: user_Info?.cashback_points,
-              ramt: user_Info?.reward_points,
-            },
+  const placeOrder = async () => {
+    try {
+      // Fetch details for each product in the cart
+      const productsData = await Promise.all(
+        cartProducts.map(async (product) => {
+          const productDetails = await fetchProductDetails(product.pid);
+          return {
+            pid: productDetails.pid,
+            product_name: productDetails.product_name,
+            price: productDetails.selling_price,
+            photo: productDetails.thumbnail_image,
+            count: product.count,
+            reward_points: productDetails.reward_points,
           };
+        })
+      );
+  
+      const currentDate = new Date();
+      const formattedDate = `${currentDate.getDate()}-${currentDate.getMonth() + 1}-${currentDate.getFullYear()}`;
+      const formattedTime = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
+  
+      // Construct the order data
+      const orderData = {
+        amount: totalAmount,
+        currency: "SGD",
+        email: user_Info?.email,
+        phone: user_Info?.phn,
+        name: user_Info?.uname,
+        payment_methods: ["paynow_online"],
+        purpose: cartProducts.map((product) => product.product_name).join(', '),
+        expires_after: "5 mins",
+        redirect_url: "http://139.59.236.50:3002/account",
+        Odata: {
+          mid: user_Info?.mid,
+          amount: totalAmount,
+          payment_mode: "Online",
+          tracking_id: `TRACK${totalAmount}`,
+          delivery_status: "Pending",
+          payment_status: "pending",
+          email: user_Info?.email,
+          shipping_addr: "US, Washington DC, London 445423 USA", 
+          contact: user_Info?.phn,
+          uname: user_Info?.uname,
+       
+        
+          // coupon: "0 ",
+          shipping: "25",
+          subtotal: "97.00", 
+          tax: "8", 
+          products: productsData,
+          // date: formattedDate,
+          // time: formattedTime,
+        },
+        points: {
+          mid: user_Info?.mid,
+          camt: user_Info?.cashback_points,
+          ramt: user_Info?.reward_points,
+          cdeducted:0,
+          rdeducted:0
+        },
+      };
+  
+      console.log('Order Data:', JSON.stringify(orderData, null, 2)); // Log the order data
+  
       const apiKey = '90bd6f5b-033f-42e7-8e92-2a443dfa42f8';
       const response = await fetch('https://apis.devcorps.in/payment-request', {
         method: 'POST',
         headers: {
-          'api-key': apiKey,
+          // 'api-key': apiKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(orderData),
       });
-
+  
       const result = await response.json();
-      await Linking.openURL(result.url);
-      // Handle the API response result here
-      console.log('Payment API Response:', result);
-
-      handleOrderPlaced();
+      
+      console.log('API Response:', result); // Debugging log to check the API response
+  
+      if (result && result.url) {
+        await Linking.openURL(result.url);
+        console.log('Payment API Response:', result);
+        handleOrderPlaced();
+      } else {
+        throw new Error('Invalid URL in the response');
+      }
     } catch (error) {
       console.error('Error placing order:', error.message);
       // Handle error appropriately (e.g., show an error message)
     }
   };
+  
   
 
 
