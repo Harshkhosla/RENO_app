@@ -70,12 +70,12 @@ console.log(searchResults,"jhatsgshsh");
   };
 // sddsdssd
 const handleSearch = (searchTerm) => {
-  console.log(searchTerm,"harshharsh");
   const apiKey = '90bd6f5b-033f-42e7-8e92-2a443dfa42f8';
   const searchUrl = `https://apis2.devcorps.in/api/search?searchTerm=${searchTerm}`;
-
+  
   axios.get(searchUrl, { headers: { 'api-key': apiKey } })
-    .then(response => {
+  .then(response => {
+      console.log(response,"harshharsh");
       if (response?.data.success) {
         setSearchResults(response?.data?.lid.concat(response?.data?.spid, response?.data?.pid));
         setSearchComplete(true); // Set searchComplete to true when search results are available

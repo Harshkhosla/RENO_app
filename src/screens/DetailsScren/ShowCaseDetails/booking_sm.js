@@ -16,6 +16,7 @@ import { useSelector } from 'react-redux';
 import RoutePaths from '../../../Navigations/RoutePaths';
 import { useNavigation } from '@react-navigation/native';
 import { BASE_URL } from '../../../services/environment';
+import dayjs from 'dayjs';
 
 const BookingSm = ({ route }) => {
   const [siteAddress, setSiteAddress] = useState('');
@@ -29,6 +30,7 @@ const BookingSm = ({ route }) => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const { pid } = route.params || {};
   const [projectDetails, setProjectDetails] = useState(null);
+  const [isUrgentChecked, setIsUrgentChecked] = useState(false);
 
   const { user_Info } = useSelector(state => state.home);
 
@@ -48,7 +50,11 @@ const BookingSm = ({ route }) => {
   };
 
   const handleDateConfirm = date => {
-    setSelectedDate(date);
+    if (!disableDates(dayjs(date))) {
+      setSelectedDate(dayjs(date).format('YYYY-MM-DD'));
+    } else {
+      alert('Selected date is not available for booking.');
+    }
     hideDatePicker();
   };
 
@@ -61,12 +67,16 @@ const BookingSm = ({ route }) => {
   };
 
   const handleTimeConfirm = time => {
-    const formattedTime = new Date(time).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
-    });
-    setSelectedTime(formattedTime);
+    if (!disableTimes(time)) {
+      const formattedTime = new Date(time).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+      });
+      setSelectedTime(formattedTime);
+    } else {
+      alert('Selected time is outside of business hours.');
+    }
     hideTimePicker();
   };
 
@@ -118,12 +128,12 @@ const BookingSm = ({ route }) => {
     }
 
     const formData = new FormData();
-    formData.append('mid',user_Info?.mid)
+    formData.append('mid', user_Info?.mid);
     formData.append('user', user_Info.uname);
     formData.append('title', projectDetails.project_name);
     formData.append('venue', siteAddress);
     formData.append('phone', contactNo);
-    formData.append('date', selectedDate.toISOString().split('T')[0]);
+    formData.append('date', selectedDate);
     formData.append('time', selectedTime);
     formData.append('desc', description);
     formData.append('consultant', 'not assigned');
@@ -139,17 +149,14 @@ const BookingSm = ({ route }) => {
     });
 
     try {
-      const response = await fetch(
-        'https://apis.devcorps.in/addbooking_sm',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'api-Key': '90bd6f5b-033f-42e7-8e92-2a443dfa42f8',
-          },
-          body: formData,
-        }
-      );
+      const response = await fetch('https://apis.devcorps.in/addbooking_sm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'api-Key': '90bd6f5b-033f-42e7-8e92-2a443dfa42f8',
+        },
+        body: formData,
+      });
 
       const data = await response.json();
 
@@ -163,11 +170,35 @@ const BookingSm = ({ route }) => {
     }
   };
 
+  const disableDates = (date) => {
+    const today = dayjs();
+    let nextWorkingDay;
+
+    if (isUrgentChecked) {
+      nextWorkingDay = today.add(1, 'day');
+      if (nextWorkingDay.day() === 0) {
+        nextWorkingDay = nextWorkingDay.add(0, 'day');
+      }
+      return date.isBefore(nextWorkingDay) || date.day() === 0;
+    } else {
+      nextWorkingDay = today.add(2, 'day');
+      while (nextWorkingDay.day() === 0 || nextWorkingDay.day() === 6) {
+        nextWorkingDay = nextWorkingDay.add(1, 'day');
+      }
+      return date.isBefore(nextWorkingDay) || date.day() === 0 || date.day() === 6;
+    }
+  };
+
+  const disableTimes = (time) => {
+    const selectedHour = new Date(time).getHours();
+    return selectedHour < 10 || selectedHour > 17;
+  };
+
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={{ padding: 20 }}>
         <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 20, color: Colors.Black }}>
-          Book Showcase
+          Book Showcase (Business hours between 10 AM and 5 PM)
         </Text>
 
         <TextInput
@@ -187,25 +218,15 @@ const BookingSm = ({ route }) => {
           style={styles.inputField}
         />
 
-        <TouchableOpacity
-          onPress={showDatePicker}
-          style={styles.dateAndTimeContainer}
-        >
+        <TouchableOpacity onPress={showDatePicker} style={styles.dateAndTimeContainer}>
           <Text style={styles.dateAndTimeText}>
-            {selectedDate
-              ? `Selected Date: ${selectedDate.toDateString()}`
-              : 'Select Date'}
+            {selectedDate ? `Selected Date: ${selectedDate}` : 'Select Date'}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={showTimePicker}
-          style={styles.dateAndTimeContainer}
-        >
+        <TouchableOpacity onPress={showTimePicker} style={styles.dateAndTimeContainer}>
           <Text style={styles.dateAndTimeText}>
-            {selectedTime
-              ? `Selected Time: ${selectedTime}`
-              : 'Select Time'}
+            {selectedTime ? `Selected Time: ${selectedTime}` : 'Select Time'}
           </Text>
         </TouchableOpacity>
 
@@ -219,54 +240,38 @@ const BookingSm = ({ route }) => {
           style={styles.inputField}
         />
 
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handlePhotoUpload}
-        >
+        <TouchableOpacity style={styles.submitButton} onPress={handlePhotoUpload}>
           <Text style={styles.submitButtonText}>Upload Images</Text>
         </TouchableOpacity>
 
-        <ScrollView
-          horizontal
-          style={{ flexDirection: 'row', marginVertical: 10 }}
-        >
+        <ScrollView horizontal style={{ flexDirection: 'row', marginVertical: 10 }}>
           {photos.map((photo, index) => (
-            <Image
-              key={index}
-              source={{ uri: photo }}
-              style={{ width: 100, height: 100, marginHorizontal: 5 }}
-            />
+            <Image key={index} source={{ uri: photo }} style={{ width: 100, height: 100, marginHorizontal: 5 }} />
           ))}
         </ScrollView>
 
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginVertical: 10,
-          }}
-        >
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
           <CheckBox
             value={agreeTerms}
             onValueChange={() => setAgreeTerms(!agreeTerms)}
             tintColors={{ true: '#488C20', false: Colors.Black }}
           />
-          <Text
-            style={{
-              marginLeft: 8,
-              color: Colors.Gray,
-              fontSize: 13,
-            }}
-          >
+          <Text style={{ marginLeft: 8, color: Colors.Gray, fontSize: 13 }}>
             I agree to terms and conditions, and accept the privacy policy
           </Text>
         </View>
 
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+          <CheckBox
+            value={isUrgentChecked}
+            onValueChange={() => setIsUrgentChecked(!isUrgentChecked)}
+            tintColors={{ true: '#488C20', false: Colors.Black }}
+          />
+          <Text style={{ marginLeft: 8, color: Colors.Gray, fontSize: 13 }}>Urgent Booking</Text>
+        </View>
+
         <TouchableOpacity
-          style={[
-            styles.submitButton,
-            !agreeTerms && { backgroundColor: Colors.Gray },
-          ]}
+          style={[styles.submitButton, !agreeTerms && { backgroundColor: Colors.Gray }]}
           onPress={handleSubmit}
           disabled={!agreeTerms}
         >
@@ -278,6 +283,7 @@ const BookingSm = ({ route }) => {
           mode="date"
           onConfirm={handleDateConfirm}
           onCancel={hideDatePicker}
+          minimumDate={new Date()}
         />
 
         <DateTimePickerModal
@@ -289,23 +295,15 @@ const BookingSm = ({ route }) => {
 
         {/* Success Modal */}
         <Modal isVisible={isSuccessModalVisible}>
-          <View
-            style={{
-              backgroundColor: 'white',
-              padding: 40,
-              borderRadius: 10,
-            }}
-          >
-            <Text style={{ fontSize: 18, marginBottom: 10,color:'#000' }}>
-              Booking created successfully!
-            </Text>
+          <View style={{ backgroundColor: 'white', padding: 40, borderRadius: 10 }}>
+            <Text style={{ fontSize: 18, marginBottom: 10, color: '#000' }}>Booking created successfully!</Text>
             <TouchableOpacity
               onPress={() => {
                 hideSuccessModal();
                 navigation.navigate(RoutePaths.Chekout, { pid: pid });
               }}
             >
-              <Text style={{ fontSize: 16,fontWeight:'#600',color:'#488C20' }}>Proceed to Checkout</Text>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#488C20' }}>Proceed to Checkout</Text>
             </TouchableOpacity>
           </View>
         </Modal>
@@ -346,7 +344,6 @@ const styles = {
   dateAndTimeText: {
     color: Colors.Black,
   },
-
   productSummaryContainer: {
     flexDirection: 'row',
     alignItems: 'center',

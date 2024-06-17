@@ -12,17 +12,16 @@ const MyListingsScreen = () => {
   const isFocused = useIsFocused();
 
   const { user_Info } = useSelector(state => state.home);
-  // console.log(user_Info,"pwoefjwevkjvew");
+  console.log(user_Info,"pwoefjwevkjvew");
   const fetchListingProfiles = async () => {
     try {
-      // const mid = 'ae9942ca4e8b434bb87f30896b2b3039';
       const response = await fetch(`${BASE_URL}get_user_listing_profiles?mid=${user_Info?.mid}`, {
         headers: {
           'api-key': apiKey,
         },
       });
       const result = await response.json();
-console.log(result,"dshjdsjsdhb");
+      console.log(result,"dshjdsjsdhb");
       if (result.success) {
         console.log(result,"harsh heree>>>>>>>>");
         setListingProfiles(result.listing_profiles);
@@ -37,6 +36,9 @@ console.log(result,"dshjdsjsdhb");
   useEffect(() => {
     if (isFocused) {
       fetchListingProfiles(); 
+      if (user_Info.kyc_status !== 'Verified') {
+        navigation.navigate('UserProfile');
+      }
     }
   }, [isFocused]);
 
@@ -121,8 +123,15 @@ console.log(result,"dshjdsjsdhb");
         {renderListings()}
       </ScrollView>
       <TouchableOpacity
-        style={styles.floatingActionButton}
-        onPress={() => navigation.navigate('AddListing')}
+        style={[styles.floatingActionButton, { backgroundColor: user_Info.kyc_status === 'Verified' ? '#385752' : '#d3d3d3' }]}
+        onPress={() => {
+          if (user_Info.kyc_status === 'Verified') {
+            navigation.navigate('AddListing');
+          } else {
+            alert('Please verify your KYC to add a listing.');
+          }
+        }}
+        disabled={user_Info.kyc_status !== 'Verified'}
       >
         <MaterialIcons name="add" size={30} color="white" />
       </TouchableOpacity>
@@ -130,15 +139,13 @@ console.log(result,"dshjdsjsdhb");
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
   },
-  row:{
-
-    flexDirection:'row',
+  row: {
+    flexDirection: 'row',
   },
   listingsRow: {
     flexDirection: 'row',
@@ -155,9 +162,9 @@ const styles = StyleSheet.create({
     margin: 4,
     position: 'relative',
     width: '45%',
-    backgroundColor:'#FFFFFF'
+    backgroundColor: '#FFFFFF',
   },
-  gap:{height:10}, 
+  gap: { height: 10 },
   emptyListing: {
     flex: 1,
     margin: 4,
@@ -168,7 +175,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-
   thumbnail: {
     width: '100%',
     height: 150,
@@ -182,15 +188,14 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   price: {
-  
     fontSize: 14,
     fontWeight: '600',
     color: '#385752',
-   marginRight:30
+    marginRight: 30,
   },
-iconCircle: {
+  iconCircle: {
     width: 28,
-    height:28,
+    height: 28,
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
@@ -211,7 +216,6 @@ iconCircle: {
     position: 'absolute',
     bottom: 16,
     right: 16,
-    backgroundColor: '#385752',
     borderRadius: 36,
     padding: 16,
     alignItems: 'center',
@@ -219,8 +223,8 @@ iconCircle: {
     elevation: 5,
   },
   emptyListingText: {
-  color: 'transparent',
-},
+    color: 'transparent',
+  },
 });
 
 export default MyListingsScreen;
