@@ -15,6 +15,7 @@ import { BASE_URL } from '../../../services/environment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import ReviewPopup from '../addreview';
+import RenderHTML from 'react-native-render-html';
 
 
 const MarketPlaceDetails = ({ navigation, route }) => {
@@ -242,8 +243,11 @@ const MarketPlaceDetails = ({ navigation, route }) => {
               </TouchableHighlight>
             )}
           </View>
-          <Text style={{ margin: 10, color: Colors.Black, fontSize: 14 }}>{item?.description}</Text>
-
+          {/* <Text style={{ margin: 10, color: Colors.Black, fontSize: 14 }}>{item?.description}</Text> */}
+          <RenderHTML
+        source={{ html: item?.description }}
+        baseStyle={{ color: Colors.Black, fontSize: 14 }}
+      />
           <View style={{ flexDirection: 'row', padding: 20, alignItems: 'center', marginBottom: 5, justifyContent: 'space-between' }}>
             <View style={{ flexDirection: 'column', marginBottom: 5, justifyContent: 'space-between' }}>
               <Text style={{ color: Colors.Black }}>Posted By</Text>

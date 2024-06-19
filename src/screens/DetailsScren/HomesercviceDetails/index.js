@@ -12,6 +12,7 @@ import SimilarProductsSectionServ from '../similarProductSER';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { Title } from 'react-native-paper';
+import RenderHTML from 'react-native-render-html';
 
 
 const HomeServiceDetails = ({ route }) => {
@@ -180,9 +181,13 @@ const HomeServiceDetails = ({ route }) => {
             </Text>
           </Text>
         </View>
-        <Text style={{ margin: 10, color: Colors.Black, fontSize: 14 }}>
+        {/* <Text style={{ margin: 10, color: Colors.Black, fontSize: 14 }}>
           {data?.short_desc}
-        </Text>
+        </Text> */}
+        <RenderHTML
+        source={{ html: data?.short_desc }}
+        baseStyle={{ color: Colors.Black, fontSize: 14 }}
+      />
         <TouchableHighlight
           style={{
             alignItems: 'center',
@@ -199,9 +204,13 @@ const HomeServiceDetails = ({ route }) => {
           <Text style={{ color: Colors.White }}>Book Demo</Text>
         </TouchableHighlight>
         <View style={{ backgroundColor: '#F5F5F5', minHeight: vh(54), padding: 10 }}>
-          <Text style={{ color: Colors.Black, fontSize: 15, fontWeight: '400' }}>
+          {/* <Text style={{ color: Colors.Black, fontSize: 15, fontWeight: '400' }}>
             {data?.desc}
-          </Text>
+          </Text> */}
+           <RenderHTML
+        source={{ html: data?.desc }}
+        baseStyle={{ color: Colors.Black, fontSize: 15, fontWeight: '400' }}
+      />
         </View>
         <View style={{ flexDirection: 'row', alignContent: 'space-between', alignItems: 'center' }}>
           <Text style={{ marginRight: '45%', color: Colors.Gray, fontSize: 17 }}>
