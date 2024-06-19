@@ -20,10 +20,13 @@ import Input from '../../../components/Input';
 import { _dosignup } from '../../../store/auth/auth.actions';
 import LoadingScreen from './LoadingScreen';
 import { LoginButton, AccessToken } from 'react-native-fbsdk';
+import CountryPicker from 'react-native-country-picker-modal';
 
 const SignUp = ({ navigation }) => {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [countryCode, setCountryCode] = useState('US');
+  const [callingCode, setCallingCode] = useState('1');
   const dispatch = useDispatch();
 
   const handleSignUp = async (values) => {
@@ -131,13 +134,30 @@ const SignUp = ({ navigation }) => {
                   {errors.Password && touched.Password && (
                     <Text style={styles.errorText}>{errors.Password}</Text>
                   )}
-                  <Input
-                    placeholder="Mobile Number"
-                    value={values.PhoneNumber}
-                    onChangeText={handleChange('PhoneNumber')}
-                    error={errors.PhoneNumber && touched.PhoneNumber && errors.PhoneNumber}
-                  />
-
+                  <View style={styles.phoneContainer}>
+                    <CountryPicker
+                      countryCode={countryCode}
+                      withFilter
+                      withFlag
+                      withCallingCode
+                      withCallingCodeButton
+                      onSelect={(country) => {
+                        setCountryCode(country.cca2);
+                        setCallingCode(country.callingCode[0]);
+                      }}
+                      containerButtonStyle={styles.countryPicker}
+                    />
+                    <TextInput
+                      placeholder="Mobile Number"
+                      value={values.PhoneNumber}
+                      onChangeText={handleChange('PhoneNumber')}
+                      style={styles.phoneInput}
+                      keyboardType="phone-pad"
+                    />
+                  </View>
+                  {errors.PhoneNumber && touched.PhoneNumber && (
+                    <Text style={styles.errorText}>{errors.PhoneNumber}</Text>
+                  )}
                   <TouchableOpacity
                     onPress={() =>
                       navigation.navigate('WebViewPage', {
@@ -350,6 +370,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 20,
     left: 20,
+  },
+  phoneContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e2e2',
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  countryPicker: {
+    flex: 0.3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  phoneInput: {
+    flex: 0.7,
+    padding: 10,
   },
   errorText: {
     color: 'red',

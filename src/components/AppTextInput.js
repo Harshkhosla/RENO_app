@@ -16,7 +16,7 @@ const AppTextInput = forwardRef((props, ref) => {
       style={[
         styles.inputFontSize,
         styles.input,
-        {fontFamily: Fonts.GilroyMedium},
+        {fontFamily: "Poppins-Regular"},
         props?.style,
       ]}
     />
