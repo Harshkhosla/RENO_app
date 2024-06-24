@@ -12,7 +12,7 @@ const MarketPlaceCard = ({ data, onPress }) => {
   const [viewCount, setViewCount] = useState(0);
   const { user_Info } = useSelector(state => state.home);
 
-
+console.log(data,"lsvihdskjhdsjvs");
   const getLikedProductsByLid = async () => {
     try {
       const apiKey = '90bd6f5b-033f-42e7-8e92-2a443dfa42f8';
@@ -163,7 +163,7 @@ const MarketPlaceCard = ({ data, onPress }) => {
         </TouchableOpacity>
       </ImageBackground>
       <View style={styles.detailsContainer}>
-        <Text style={styles.txt}>{data?.title}</Text>
+        <Text style={styles.txt}>{data?.service_name}</Text>
         <View style={styles.rowContainer}>
           <Text style={styles.pricetxt}>${data?.price}</Text>
           <Text style={styles.viewingText}>{`${viewCount} people viewing`}</Text>

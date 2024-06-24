@@ -16,9 +16,9 @@ const Images = {
   personProfile: require('../assets/Images/personProfile.png'),
   marketplace_recommended: require('../assets/Images/marketplace-recommended.png'),
   Coin_Wallet: require('../assets/Images/Coin_Wallet.png'),
-  harsh_Wallet: require('../assets/Images/harsh.png'),
+  harsh_Wallet: require('../assets/Images/image1.png'),
   // harsh_Wallet4: require('../assets/Images/harshkkk.jpg'),
-  harsh_Wallet1: require('../assets/Images/sample.png'),
+  harsh_Wallet1: require('../assets/Images/image.png'),
   harsh_Wallet2: require('../assets/Images/harshdds.jpg'),
   
 
