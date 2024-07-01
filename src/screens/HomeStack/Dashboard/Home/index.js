@@ -50,8 +50,6 @@ console.log(searchResults,"jhatsgshsh");
   }, []);
 
   const _handleButtonClick = (item, routePath) => {
-    // console.log(item);
-    // console.log(routePath);
     navigation.navigate(routePath, {item: item});
   };
 
@@ -68,7 +66,7 @@ console.log(searchResults,"jhatsgshsh");
         showSnack(error.message);
       });
   };
-// sddsdssd
+
 const handleSearch = (searchTerm) => {
   const apiKey = '90bd6f5b-033f-42e7-8e92-2a443dfa42f8';
   const searchUrl = `https://apis2.devcorps.in/api/search?searchTerm=${searchTerm}`;
@@ -82,13 +80,11 @@ const handleSearch = (searchTerm) => {
       } else {
         setSearchResults([]);
         setSearchComplete(false); // Set searchComplete to false if no results found
-        // showSnack('No results found');
       }
     })
     .catch(error => {
       setSearchResults([]);
       setSearchComplete(false); // Set searchComplete to false on error
-      // showSnack('Error fetching search results');
     });
 };
 
@@ -171,7 +167,6 @@ const handleSearch = (searchTerm) => {
           <TouchableOpacity
             style={styles.viewMoreButton}
             onPress={() => navigation.navigate(RoutePaths.Services)}>
-            {/* <Text style={styles.viewMoreText}>View More</Text> */}
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
     <Text style={styles.viewMoreText}>View More</Text>
     <Icons name="chevron-forward" size={20} color={'#385752'} />
@@ -206,7 +201,6 @@ const handleSearch = (searchTerm) => {
     <Text style={styles.viewMoreText}>View More</Text>
     <Icons name="chevron-forward" size={20} color={'#385752'} />
   </View>
-          {/* <Icon name="chevron-forward" size={24} color={Colors.Black} /> */}
         </TouchableOpacity>
         </View>
 
@@ -259,7 +253,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle:{
    fontSize:19,
-   fontWeight: 'bold' 
+   fontWeight: 'bold',
+   fontFamily: 'Poppins-Bold',
   },
   searchButton: {
     backgroundColor: '#385752',
@@ -271,6 +266,7 @@ const styles = StyleSheet.create({
   searchButtonText: {
     color: '#fff',
     fontSize: 16,
+    fontFamily: 'Poppins-Regular',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -283,6 +279,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400',
     color: Colors.Black,
+    fontFamily: 'Poppins-Regular',
   },
   viewMoreButton: {
     fontSize: 16,
@@ -294,7 +291,7 @@ const styles = StyleSheet.create({
     width:'80%',
     fontSize: normalize(15),
     borderRadius: 10,
-
+    fontFamily: 'Poppins-Regular',
   },
   floatingButton: {
     position: 'absolute',
@@ -308,9 +305,8 @@ const styles = StyleSheet.create({
   viewMoreText: {
     fontSize: 16,
     fontWeight: '400',
-    // marginRight: 5,
     color: '#385752',
-    
+    fontFamily: 'Poppins-Regular',
   },
 });
 

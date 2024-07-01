@@ -21,9 +21,11 @@ console.log(selectedCategory,"<>>>>>>>>>>ddjdsnjsdn");
   useEffect(() => {
     if (selectedItemCategory === 'Product') {
       fetchProductCategories();
-      fetchServiceCategories2()
+      fetchServiceCategories2();
     } else if (selectedItemCategory === 'Service') {
       fetchServiceCategories();
+      // fetchProductsForCategory();
+      
       // fetchServiceCategories3();
       console.log("jjjjjjjjjjjjjjjjjjjjjjjjjjjjj",selectedCategoryProducts1);
       setSelectedCategoryProducts1(selectedCategoryProducts1.filter(item => item.product_category === '')); 
@@ -127,26 +129,26 @@ console.log(selectedCategory,"<>>>>>>>>>>ddjdsnjsdn");
     }
   };
 
-  // const fetchServiceCategories3 = async () => {
-  //   try {
-  //     const response = await fetch('https://apis.devcorps.in/getAllServiceCategories_hsm', {
-  //       method: 'GET',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'api-key': '90bd6f5b-033f-42e7-8e92-2a443dfa42f8',
-  //       },
-  //     });
+  const fetchServiceCategories3 = async () => {
+    try {
+      const response = await fetch('https://apis.devcorps.in/getAllServiceCategories_hsm', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': '90bd6f5b-033f-42e7-8e92-2a443dfa42f8',
+        },
+      });
 
-  //     const result = await response.json();
-  //     if (result.success) {
-  //       setSelectedCategoryProducts1(result?.products || []);
-  //     } else {
-  //       console.error('Failed to fetch service categories');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching service categories:', error);
-  //   }
-  // };
+      const result = await response.json();
+      if (result.success) {
+        setSelectedCategoryProducts1(result?.products || []);
+      } else {
+        console.error('Failed to fetch service categories');
+      }
+    } catch (error) {
+      console.error('Error fetching service categories:', error);
+    }
+  };
 
   const fetchProductsForCategory = (categoryNameField, categoryId) => {
     console.log(categoryNameField,"sdkjsdjn");
