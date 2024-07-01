@@ -14,6 +14,7 @@ import { BASE_URL } from '../../../services/environment';
 import CommonHomeList from '../../../components/CommonHomeList';
 import MarketPlaceCard from '../../../components/MarketPlaceCard';
 import HomeServiceCard from '../../../components/HomeServiceCard';
+import RenderHTML from 'react-native-render-html';
 
 const ProductServiceDetails = ({ navigation,route }) => {
   const { data } = route.params;
@@ -300,9 +301,13 @@ console.log(data,"dsjndvdsjkvnsd");
             </Text>
           </Text>
         </View>
-        <Text style={{ margin: 10, color: Colors.Black, fontSize: 14 }}>
+        {/* <Text style={{ margin: 10, color: Colors.Black, fontSize: 14 }}>
           {data?.short_desc}
-        </Text>
+        </Text> */}
+        <RenderHTML
+        source={{ html: data?.short_desc }}
+        baseStyle={{ color: Colors.Black, fontSize: 14 ,textAlign:"justify"}}
+      />
         <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
         <TouchableHighlight
           style={styles.button}
@@ -343,9 +348,13 @@ console.log(data,"dsjndvdsjkvnsd");
           Description
         </Text>
         <View style={{ backgroundColor: '#F5F5F5', minHeight: vh(54), padding: 10 }}>
-          <Text style={{ color: Colors.Black, fontSize: 15, fontWeight: '400' }}>
+          {/* <Text style={{ color: Colors.Black, fontSize: 15, fontWeight: '400' }}>
             {data?.desc}
-          </Text>
+          </Text> */}
+             <RenderHTML
+        source={{ html: data?.desc }}
+        baseStyle={{ color: Colors.Black, fontSize: 15 ,textAlign:"justify"}}
+      />
         </View>
         
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5, justifyContent: 'space-between' }}>

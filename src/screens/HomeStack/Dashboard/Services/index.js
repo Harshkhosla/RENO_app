@@ -156,6 +156,7 @@ console.log(selectedCategory,"<>>>>>>>>>>ddjdsnjsdn");
     const productsForCategory = homeServiceList.filter(
       (product) => !categoryId || product[categoryNameField] === categoryId
     );
+    console.log(productsForCategory,"dskjhvdbdsjbvshb");
     setSelectedCategoryProducts(productsForCategory);
   };
 
@@ -165,6 +166,7 @@ console.log(selectedCategory,"<>>>>>>>>>>ddjdsnjsdn");
   };
 
   const _handleCategoryClick = (category) => {
+    console.log(category,"harshdata");
     setSelectedCategory(category);
   };
 

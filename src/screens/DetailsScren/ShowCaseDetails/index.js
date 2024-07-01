@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import RenderHTML from 'react-native-render-html';
 
 
 const ShowCaseDetails = ({ route }) => {
@@ -112,7 +113,11 @@ const ShowCaseDetails = ({ route }) => {
             Starting From : ${item?.project_rate}
           </Text>
         </View>
-        <Text style={{ margin: 10, color: Colors.Black, fontSize: 14,textAlign:"justify"  }}>{item?.project_desc}</Text>
+        {/* <Text style={{ margin: 10, color: Colors.Black, fontSize: 14,textAlign:"justify"  }}>{item?.project_desc}</Text> */}
+        <RenderHTML
+        source={{ html: item?.project_desc }}
+        baseStyle={{ color: Colors.Black, fontSize: 14 ,textAlign:"justify"}}
+      />
         <TouchableHighlight
           style={{
             alignItems: 'center',
@@ -129,17 +134,29 @@ const ShowCaseDetails = ({ route }) => {
           <Text style={{ color: Colors.White }}>Book Demo</Text>
         </TouchableHighlight>
         <View style={{ backgroundColor: '#F5F5F5', minHeight: vh(54), padding: 10 }}>
-          <Text style={{ color: Colors.Black, fontSize: 15, fontWeight: '400' }}>
+          {/* <Text style={{ color: Colors.Black, fontSize: 15, fontWeight: '400' }}>
             {item?.project_subtitle}
-          </Text>
-          <Text style={{  color: Colors.Gray,textAlign:"justify" }} >{item?.project_details}</Text>
+          </Text> */}
+           <RenderHTML
+        source={{ html: item?.project_subtitle }}
+        baseStyle={{ color: Colors.Black, fontSize: 15 ,textAlign:"justify"}}
+      />
+          {/* <Text style={{  color: Colors.Gray,textAlign:"justify" }} >{item?.project_details}</Text> */}
+          <RenderHTML
+        source={{ html: item?.project_details }}
+        baseStyle={{ color: Colors.Black, fontSize: 14 ,textAlign:"justify"}}
+      />
         </View>
         <ProjectShowCaseSlider data={item?.sub_slider_photos} />
         <Image
           source={{ uri: item?.quatation_photo }} // You can adjust this based on your data structure
           style={{ width: '100%', height: 500, marginVertical: 10 }}
         />
-        <Text style={{ margin: 10, color: Colors.Gray ,textAlign:"justify" }}>{item?.project_sub_desc}</Text>
+        {/* <Text style={{ margin: 10, color: Colors.Gray ,textAlign:"justify" }}>{item?.project_sub_desc}</Text> */}
+        <RenderHTML
+        source={{ html: item?.project_sub_desc }}
+        baseStyle={{ color: Colors.Black, fontSize: 14 ,textAlign:"justify"}}
+      />
       </ScrollView>
     </View>
   );

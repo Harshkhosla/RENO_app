@@ -169,17 +169,12 @@ const SignUp = ({ navigation }) => {
                   >
                     <Text style={{ fontSize: 12 }}>
                       By signing up, you agree to our{' '}
-                      {
-                        <Text style={{ color: '#88B347', fontSize: 12 }}>
-                          Terms &
-                        </Text>
-                      }
-                      {
-                        <Text style={{ color: '#88B347', fontSize: 12 }}>
-                          {' '}
-                          Privacy Policy
-                        </Text>
-                      }{' '}
+                      <Text style={{ color: '#88B347', fontSize: 12 }}>
+                        Terms &{' '}
+                      </Text>
+                      <Text style={{ color: '#88B347', fontSize: 12 }}>
+                        Privacy Policy
+                      </Text>{' '}
                     </Text>
                   </TouchableOpacity>
 

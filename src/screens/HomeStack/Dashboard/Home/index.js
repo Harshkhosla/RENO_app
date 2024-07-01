@@ -151,6 +151,7 @@ const handleSearch = (searchTerm) => {
           data={marketPlaceList}
           headerTitle={'MarketPlace'}
           renderItem={(item, index) => {
+            {console.log(item,"sdckjhbvdhbs");}
             return (
               <MarketPlaceCard
                 data={item.item}
